@@ -41,6 +41,9 @@
 // unless said parties also agree to it.
 
 
+// Small modifications by Eliah Kagan to enable for Ask Ubuntu chat rooms.
+
+
 ( function () { try { // start of anonymous wrapper function (needed to restrict variable scope on Opera)
 
 // Old Opera does not support @match, so re-check that we're on SE chat before doing anything
@@ -83,7 +86,7 @@ var chatJaxSetup = function () {
 		console.log( 'ChatJax++ failed find CHAT or jQuery object, aborting' );
 		return;
 	}
-	
+
 	// don't automatically typeset the whole page
 	MathJax.Hub.Config( { skipStartupTypeset: true } );
 
@@ -103,7 +106,7 @@ var chatJaxSetup = function () {
 	var observer = new MutationObserver( observeMutations );
 
 	// TODO: somehow ignore mutations triggered by MathJax itself
-	
+
 	function observeMutations ( mutations ) {
 		for ( var i = 0; i < mutations.length; i++ ) {
 			var mutation = mutations[i];
@@ -119,25 +122,26 @@ var chatJaxSetup = function () {
 			added.not( leafSelector ).find( leafSelector ).each( mathJaxify );
 		}
 	}
-	function startObserving () { observer.observe( this, config ) }	
+	function startObserving () { observer.observe( this, config ) }
 
 	var possibleTexDelims = /\$|\\\[|\\begin/;
-	function mathJaxify() { 
+	function mathJaxify() {
 		// optimization: don't try to typeset anything that clearly contains no TeX markup
 		if ( ! possibleTexDelims.test( this.textContent ) ) return;
 		MathJax.Hub.Queue( ['Typeset', MathJax.Hub, this] );
 	}
-	
+
 	$( rootSelector ).each( startObserving ).find( branchSelector ).each( startObserving );
 	$( rootSelector ).find( leafSelector ).each( mathJaxify );
 	$( extraSelector ).each( startObserving ).each( mathJaxify );
 	console.log( 'ChatJax++ setup complete' );
 };
 
-// Extract parent site URL from footer:
+// Extract parent site URL from footer, but pretend askubuntu.com is math.stackexchange.com:
 var footerLink = document.querySelector('#footer-logo a, #transcript-logo a');
 if ( !footerLink ) return;
-var match = /^((?:https?:)?\/\/((?:[0-9A-Za-z\-]+\.)*(?:stackexchange\.com|mathoverflow\.net)))(\/|$)/.exec( footerLink.href );
+var href = footerLink.href.replace( /\baskubuntu\.com\b/, 'math.stackexchange.com' );
+var match = /^((?:https?:)?\/\/((?:[0-9A-Za-z\-]+\.)*(?:stackexchange\.com|mathoverflow\.net)))(\/|$)/.exec( href );
 if ( !match ) return;
 var parentURL = match[1] + '/404', siteName = match[2];
 
@@ -192,4 +196,3 @@ if ( configCache[siteName] ) {
 }
 
 } catch (e) { console.log( 'ChatJax++ error:', e ); } } )();  // end of anonymous wrapper function
-
